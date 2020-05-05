@@ -8,6 +8,14 @@ provider:
   name: aws
   runtime: nodejs12.x
 
+  iamRoleStatements:
+    - Effect: Allow
+      Action: dynamodb:scan
+      # ***
+      # * This adds the dynamodb:scan permission to the Lambda execution role.
+      # ***
+      Resource: !GetAtt RestaurantsTable.Arn
+
 functions:
   get-index:
     handler: functions/get-index.handler
@@ -15,6 +23,13 @@ functions:
       - http:
           path: /
           method: get
+    environment:
+      restaurants_api:
+        Fn::Join:
+        - ''
+        - - "https://"
+          - !Ref ApiGatewayRestApi
+          - ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/restaurants"
   get-restaurants:
     handler: functions/get-restaurants.handler
     events:
@@ -45,3 +60,7 @@ resources:
   Outputs:
     RestaurantsTableName:
       Value: !Ref RestaurantsTable
+
+# Serverless Framework Plugins
+plugins:
+  - serverless-export-env
