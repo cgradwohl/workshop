@@ -23,8 +23,9 @@ functions:
           method: get
     environment:
       restaurants_table: !Ref RestaurantsTable
-
+# CloudFormation
 resources:
+  # CloudFormation Resources
   Resources:
     RestaurantsTable:
       Type: AWS::DynamoDB::Table
@@ -36,6 +37,11 @@ resources:
         KeySchema:
           - AttributeName: name
             KeyType: HASH
+  # CloudFormation Outputs - This adds the resoursces to the cloudformation stack !
+  # The optional Outputs section declares output values that you can import into
+  # other stacks (to create cross-stack references), return in response (to describe stack calls),
+  # or view on the AWS CloudFormation console. For example, you can output the S3 bucket
+  # name for a stack to make the bucket easier to find.
   Outputs:
     RestaurantsTableName:
       Value: !Ref RestaurantsTable
