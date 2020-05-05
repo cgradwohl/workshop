@@ -16,13 +16,13 @@ functions:
           path: /
           method: get
   get-restaurants:
-  handler: functions/get-restaurants.handler
-  events:
-    - http:
-        path: /restaurants
-        method: get
-  environment:
-    restaurants_table: !Ref RestaurantsTable
+    handler: functions/get-restaurants.handler
+    events:
+      - http:
+          path: /restaurants
+          method: get
+    environment:
+      restaurants_table: !Ref RestaurantsTable
 
 resources:
   Resources:
