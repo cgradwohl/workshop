@@ -2,6 +2,9 @@ const fs = require("fs")
 const Mustache = require('mustache')
 const http = require('axios')
 
+/**
+ * restaurants_api is generated with CloudFormation in sls yml
+ */
 const restaurantsApiRoot = process.env.restaurants_api
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
