@@ -9,12 +9,18 @@ provider:
   runtime: nodejs12.x
 
   iamRoleStatements:
+    # ***
+    # * This adds the dynamodb:scan permission to the Lambda execution role.
+    # ***
     - Effect: Allow
       Action: dynamodb:scan
-      # ***
-      # * This adds the dynamodb:scan permission to the Lambda execution role.
-      # ***
       Resource: !GetAtt RestaurantsTable.Arn
+      #  ***
+      #  * Adds'execute-api:Invoke' to the IAM execution role, using serverless-pseudo-parameters
+      # ***
+    - Effect: Allow
+      Action: execute-api:Invoke
+      Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:#{ApiGatewayRestApi}/${self:provider.stage}/GET/restaurants
 
 functions:
   get-index:
@@ -36,6 +42,8 @@ functions:
       - http:
           path: /restaurants
           method: get
+          # now this function requires an IAM Role, which for this exmple will live in the INVOKE EXECUTION IAM ROLE that we defined in the iamRoleStatements
+          authorizer: aws_iam
     environment:
       restaurants_table: !Ref RestaurantsTable
 # CloudFormation
@@ -64,3 +72,4 @@ resources:
 # Serverless Framework Plugins
 plugins:
   - serverless-export-env
+  - serverless-pseudo-parameters
