@@ -20,6 +20,7 @@ provider:
       # ***
     - Effect: Allow
       Action: execute-api:Invoke
+      #  the request arn to /restaurants much match this template in order to get access.
       Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:#{ApiGatewayRestApi}/${self:provider.stage}/GET/restaurants
 
 functions:
