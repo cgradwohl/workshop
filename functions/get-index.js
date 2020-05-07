@@ -18,7 +18,7 @@ const getRestaurants = async () => {
   }
 
   // credentials are available in process.env
-  console.log('ENV', JSON.stringify(process.env, null, 2));\
+  console.log('ENV', JSON.stringify(process.env, null, 2));
 
   aws4.sign(opts)
 
