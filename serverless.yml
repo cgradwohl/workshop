@@ -37,6 +37,8 @@ functions:
         - - "https://"
           - !Ref ApiGatewayRestApi
           - ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/restaurants"
+      cognito_user_pool_id: !Ref CognitoUserPool
+      cognito_client_id: !Ref WebCognitoUserPoolClient
   
   get-restaurants:
     handler: functions/get-restaurants.handler
