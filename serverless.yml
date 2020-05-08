@@ -37,7 +37,10 @@ functions:
         - - "https://"
           - !Ref ApiGatewayRestApi
           - ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/restaurants"
+      # this is the user pool itself, A user pool is a user directory in Amazon Cognito. With a user pool, your users can sign in to your web or mobile app through Amazon Cognito.
       cognito_user_pool_id: !Ref CognitoUserPool
+      # you need an app client ID and an optional client secret. It is your responsibility to secure any app client IDs or secrets so that only authorized client apps can call these
+      # unauthenticated APIs. You can create multiple apps for a user pool, and generally an app corresponds to the platform of an app.
       cognito_client_id: !Ref WebCognitoUserPoolClient
   
   get-restaurants:
@@ -57,6 +60,7 @@ functions:
       - http:
           path: /restaurants/search
           method: post
+          # Here we are saying that /restaurants/search needs to be authed by a Cognito Authroizer, which is a managed service.
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
@@ -78,6 +82,14 @@ resources:
         KeySchema:
           - AttributeName: name
             KeyType: HASH
+    # As an alternative to using IAM roles and policies or Lambda authorizers (formerly known as custom authorizers), 
+    # you can use an Amazon Cognito user pool to control who can access your API in Amazon API Gateway.To use an Amazon
+    # Cognito user pool with your API, you must first create an authorizer of the COGNITO_USER_POOLS type and then configure
+    # an API method to use that authorizer. After the API is deployed, the client must first sign the user in to the user
+    # pool, obtain an identity or access token for the user, and then call the API method with one of the tokens, which
+    # are typically set to the request's Authorization header. The API call succeeds only if the required token is supplied
+    # and the supplied token is valid, otherwise, the client isn't authorized to make the call because the client did not
+    # have credentials that could be authorized.
     CognitoAuthorizer:
       Type: AWS::ApiGateway::Authorizer
       Properties:
