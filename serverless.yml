@@ -37,6 +37,7 @@ functions:
         - - "https://"
           - !Ref ApiGatewayRestApi
           - ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/restaurants"
+  
   get-restaurants:
     handler: functions/get-restaurants.handler
     events:
@@ -47,6 +48,20 @@ functions:
           authorizer: aws_iam
     environment:
       restaurants_table: !Ref RestaurantsTable
+  
+  search-restaurants:
+    handler: functions/search-restaurants.handler
+    events:
+      - http:
+          path: /restaurants/search
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: CognitoAuthorizer
+    environment:
+      restaurants_table: !Ref RestaurantsTable
+      
 # CloudFormation
 resources:
   # CloudFormation Resources
@@ -61,6 +76,16 @@ resources:
         KeySchema:
           - AttributeName: name
             KeyType: HASH
+    CognitoAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        AuthorizerResultTtlInSeconds: 300
+        IdentitySource: method.request.header.Authorization
+        Name: Cognito
+        RestApiId: !Ref ApiGatewayRestApi
+        Type: COGNITO_USER_POOLS
+        ProviderARNs:
+          - !GetAtt CognitoUserPool.Arn
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
