@@ -1,0 +1,2 @@
+// This (and combined with the @types/jest dev dependency) enables intellisense support for Jest in VS Code.
+{ "typeAcquisition": { "include": [ "jest" ] } }
