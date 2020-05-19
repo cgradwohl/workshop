@@ -8,6 +8,9 @@ provider:
   name: aws
   runtime: nodejs12.x
 
+  # By default, one IAM Role is shared by all of the Lambda functions in your service.
+  # To add specific rights to this service-wide Role, define statements in provider.iamRoleStatements which will be merged into the generated policy.
+  # Our Lambda functions assume this IAM role during execution !
   iamRoleStatements:
     # ***
     # * This adds the dynamodb:scan permission to the Lambda execution role.
@@ -20,7 +23,9 @@ provider:
       # ***
     - Effect: Allow
       Action: execute-api:Invoke
-      #  the request arn to /restaurants much match this template in order to get access.
+      # the request arn to /restaurants much match this template in order to get access.
+      # here we are giving access to our other lambdas, via the default role to be able to invoke this resource
+      # basically all this says is that our other AWS resources can invoke this api endpoint
       Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:#{ApiGatewayRestApi}/${self:provider.stage}/GET/restaurants
 
 functions:
@@ -49,7 +54,8 @@ functions:
       - http:
           path: /restaurants
           method: get
-          # now this function requires an IAM Role, which for this exmple will live in the INVOKE EXECUTION IAM ROLE that we defined in the iamRoleStatements
+          # now this function requires an IAM Role, which for this exmple will live in the INVOKE EXECUTION IAM ROLE that we defined in the iamRoleStatements under the execute-api:Invoke Action
+          # If you want to require that the caller submit the IAM user's access keys in order to be authenticated to invoke your Lambda Function, set the authorizer to aws_iam
           authorizer: aws_iam
     environment:
       restaurants_table: !Ref RestaurantsTable
