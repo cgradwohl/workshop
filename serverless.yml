@@ -7,6 +7,17 @@ custom:
 provider:
   name: aws
   runtime: nodejs12.x
+  environment:
+    # To make the HTTP request, we need to know the root URL for the deploy API and put it somewhere so the viaHttp test method can use.
+    # Luckily, we already capture and load environment variables using the serverless-export-env plugin and the dotEnv npm module, and the .env file
+    # This adds a rootUrl environment variable to ALL the functions in this project. This environment variable would be picked
+    # up and loaded into our tests by the init module in the test directory.
+    rootUrl:
+      Fn::Join:
+        - ""
+        - - https://
+          - !Ref ApiGatewayRestApi
+          - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
 
   # By default, one IAM Role is shared by all of the Lambda functions in your service.
   # To add specific rights to this service-wide Role, define statements in provider.iamRoleStatements which will be merged into the generated policy.
