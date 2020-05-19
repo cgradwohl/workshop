@@ -27,7 +27,7 @@ jobs:
       - checkout
       - node/with-cache:
           steps:
-            - run: npm run acceptance
+            - run: npm run e2e
 
 workflows:
    version: 2
