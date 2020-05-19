@@ -9,6 +9,10 @@ const init = async () => {
     return
   }
   
+  // awscred resolves AWS credentials using, in order: environment variables, INI files, and HTTP calls
+  // 1. the `serverless-export-env` plugin export our env variables to a file called .env for us
+  // 2. require('dotenv').config() loads those environment variables into the execution procress
+  // 3. awscred reads those variables from the environment process and resolves them for us.
   const { credentials, region } = await promisify(awscred.load)()
   
   process.env.AWS_ACCESS_KEY_ID     = credentials.accessKeyId

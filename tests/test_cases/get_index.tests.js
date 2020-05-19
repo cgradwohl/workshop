@@ -8,6 +8,7 @@
 const cheerio = require('cheerio')
 const when = require('../steps/when')
 const { init } = require('../steps/init')
+console.log = jest.fn() // silence the funtions console logs
 
 describe(`When we invoke the GET / endpoint`, () => {
   beforeAll(async () => await init())
