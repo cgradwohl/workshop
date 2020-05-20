@@ -13,6 +13,18 @@ console.log = jest.fn() // silence the funtions console logs
 describe(`When we invoke the GET / endpoint`, () => {
   beforeAll(async () => await init())
   
+  /**
+   * How can we make the tests more reliable/ resiliant without relying on the data from the database?
+   * 
+   * 1. The data that the tests need to assert on inorder to pass,
+   * should be created during the beforeAll() step. i.e. insert some data
+   * into the DB.
+   * 
+   * 2. The data should then be removed during the afterAll() step.
+   * 
+   * 3. Since we are using infrastructure ass code is it considered best practice to spin up
+   * a new testing stack, setup the data and run the tests against the test stack, then tear it all down.
+   */
   it(`Should return the index page with 8 restaurants`, async () => {
     const res = await when.we_invoke_get_index()
 
