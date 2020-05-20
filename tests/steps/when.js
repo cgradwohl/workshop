@@ -17,6 +17,9 @@ const http = require('axios')
  * To allow the when module to toggle between "invoke function locally" and
  * "call the deployed API", we can use an environment variable that is set
  * when we run the test.
+ * 
+ * for integration tests we call TEST_MODE=handler at runtime
+ * for e2e tests we call TEST_MODE=http at runtime
  */
 const mode = process.env.TEST_MODE
 
