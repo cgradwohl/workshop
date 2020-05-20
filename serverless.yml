@@ -58,6 +58,8 @@ functions:
       # you need an app client ID and an optional client secret. It is your responsibility to secure any app client IDs or secrets so that only authorized client apps can call these
       # unauthenticated APIs. You can create multiple apps for a user pool, and generally an app corresponds to the platform of an app.
       cognito_client_id: !Ref WebCognitoUserPoolClient
+      #  we add cognito_server_client_id for testing purposes.
+      #  The ALLOW_ADMIN_USER_PASSWORD_AUTH auth flow allows us to call the Cognito admin endpoints to register users and sign in as them.
       cognito_server_client_id: !Ref ServerCognitoUserPoolClient
   
   get-restaurants:

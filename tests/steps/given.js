@@ -6,7 +6,7 @@ const random_password = () => `${chance.string({ length: 8})}B!gM0uth`
 
 const an_authenticated_user = async () => {
   const cognito = new AWS.CognitoIdentityServiceProvider()
-  
+  // we already had this variable defined in serverless.yml for the get-index handler.
   const userpoolId = process.env.cognito_user_pool_id
   // we need this value from the environement but we don't need it in ANY of our functions!
   const clientId = process.env.cognito_server_client_id
