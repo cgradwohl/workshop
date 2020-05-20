@@ -52,6 +52,22 @@ const respondFrom = async (httpRes) => {
   }
 }
 
+/**
+ * When you send HTTP requests to AWS, you sign the requests so that AWS can identify who sent them.
+ * We sign requests with our AWS access key, which consists of an access key ID and secret access key.
+ * 
+ * Signing makes sure that the request has been sent by someone with a valid access key.
+ * 
+ * For this test we are signing the request for API Gateway. Amazon API Gateway requires that you authenticate
+ * every request you send by signing the request.
+ * 
+ * For payload-less methods, such as GET, the SignedHeaders string, used to sign the request using Signature Version 4,
+ * must include host;x-amz-date.
+ * For method requiring payloads, such as POST, the SignedHeaders string must also include content-type.
+ * Unlike other AWS services, such as DynamoDB, the x-amz-target header is not required to compute the Authorization header value.
+ * 
+ * More Infor here: https://docs.aws.amazon.com/apigateway/api-reference/signing-requests/
+ */
 const signHttpRequest = (url) => {
   const urlData = URL.parse(url)
   const opts = {
@@ -96,11 +112,6 @@ const viaHttp = async (relPath, method, opts) => {
 
     const res = await httpReq
 
-    /***
-     * Since axios has a different response structure to our Lambda function, we need the respondFrom method massage the axios response to what we need.
-     */
-    const dude = respondFrom(res);
-    console.log('DUDE', dude);
     return respondFrom(res)
   } catch (err) {
     if (err.status) {
