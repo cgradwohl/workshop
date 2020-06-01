@@ -183,6 +183,18 @@ resources:
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
           - ALLOW_REFRESH_TOKEN_AUTH
         PreventUserExistenceErrors: ENABLED
+    # Here we publicize the service's root URL and operation constraints to SSM Parameter Store for other services to consume
+    ServiceUrlParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Type: String
+        Name: /${self:service}/${self:provider.stage}/serviceUrl
+        Value:
+          Fn::Join:
+            - ""
+            - - https://
+              - !Ref ApiGatewayRestApi
+              - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
   # CloudFormation Outputs - This adds the resoursces to the cloudformation stack output!
   # The optional Outputs section declares output values that you can import into
   # other stacks (to create cross-stack references), return in response (to describe stack calls),
