@@ -3,6 +3,7 @@ const Mustache = require('mustache')
 const http = require('axios')
 const aws4 = require('aws4')
 const URL = require('url')
+const middy = require('middy')
 
 const restaurantsApiRoot = process.env.restaurants_api
 const cognitoUserPoolId = process.env.cognito_user_pool_id
@@ -35,7 +36,13 @@ const getRestaurants = async () => {
   return (await httpReq).data
 }
 
-module.exports.handler = async (event, context) => {
+/**
+ * BUMMER TO MAKE THE TESTS RUN :/
+ * We don't need to bring in any middlewares here, we're only doing this here so all the
+ * functions have the same callback-based function signature, which we're expecting during
+ * the integration tests.
+ */
+module.exports.handler = middy(async (event, context) => {
   const restaurants = await getRestaurants()
   console.log(`found ${restaurants.length} restaurants`)  
   const dayOfWeek = days[new Date().getDay()]
@@ -57,4 +64,5 @@ module.exports.handler = async (event, context) => {
   }
 
   return response
-}
+})
+
