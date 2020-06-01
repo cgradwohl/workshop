@@ -12,6 +12,7 @@ const _ = require('lodash')
 const aws4 = require('aws4')
 const URL = require('url')
 const http = require('axios')
+const { promisify } = require('util')
 
 /**
  * To allow the when module to toggle between "invoke function locally" and
@@ -24,7 +25,8 @@ const http = require('axios')
 const mode = process.env.TEST_MODE
 
 const viaHandler = async (event, functionName) => {
-  const handler = require(`${APP_ROOT}/functions/${functionName}`).handler
+  // sinnce we are using the middy middleware lib on our functions (which helps us access ssm), we need to promisify the callback that the middy wrapped handlers onw return.
+  const handler = promisify(require(`${APP_ROOT}/functions/${functionName}`).handler)
 
   const context = {}
 
