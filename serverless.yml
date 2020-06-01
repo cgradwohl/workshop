@@ -184,6 +184,7 @@ resources:
           - ALLOW_REFRESH_TOKEN_AUTH
         PreventUserExistenceErrors: ENABLED
     # Here we publicize the service's root URL and operation constraints to SSM Parameter Store for other services to consume
+    # Now other services that want to use your service can find out the service URL by referencing this SSM parameter.
     ServiceUrlParameter:
       Type: AWS::SSM::Parameter
       Properties:
