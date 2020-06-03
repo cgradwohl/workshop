@@ -48,7 +48,7 @@ The Test Honeycomb
 - more integration tests
 - less e2e tests
 
-TODO:
+TODOs:
 1. Make the Tests more reliable
 How can we make the tests more reliable/ resiliant without relying on the data from the database?
 a. The data that the tests need to assert on inorder to pass, should be created during the beforeAll() step. i.e. insert some data into the DB.
