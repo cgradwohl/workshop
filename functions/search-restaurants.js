@@ -20,17 +20,7 @@ const findRestaurantsByTheme = async (theme, count) => {
   return resp.Items
 }
 
-module.exports.handler = middy(async (event, context) => {
-  const req = JSON.parse(event.body)
-  const theme = req.theme
-  const restaurants = await findRestaurantsByTheme(theme, process.env.defaultResults)
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify(restaurants)
-  }
-
-  return response
-}).use(ssm({
+const defaultResults = ssm({
   cache: true,
   cacheExpiryInMillis: 5 * 60 * 1000, // 5 mins
   names: {
@@ -40,4 +30,30 @@ module.exports.handler = middy(async (event, context) => {
     const config = JSON.parse(process.env.config)
     process.env.defaultResults = config.defaultResults
   }
-}))
+});
+
+// we asked the middleware to put the secretString in the context object instead of the environment variable.
+const secretString = ssm({
+  cache: true,
+  cacheExpiryInMillis: 5 * 60 * 1000, // 5 mins
+  names: {
+    secretString: `/${serviceName}/${stage}/search-restaurants/secretString`
+  },
+  setToContext: true
+})
+
+module.exports.handler = middy(async (event, context) => {
+  const req = JSON.parse(event.body)
+  const theme = req.theme
+  const restaurants = await findRestaurantsByTheme(theme, process.env.defaultResults)
+  const response = {
+    statusCode: 200,
+    body: JSON.stringify(restaurants)
+  }
+
+  console.info('SUPER SSM SECRET  --->   ', context.secretString)
+
+  return response
+})
+.use(defaultResults)
+.use(secretString)
