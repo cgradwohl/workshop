@@ -48,6 +48,11 @@ provider:
         - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/get-restaurants/config
         - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/config
         - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/secretString
+    # here we are adding the permission to the lambda execution role to allow decrypting kms keys useing the ssm value as a resource
+    - Effect: Allow
+      Action: kms:Decrypt
+      # This special syntax ${ssm:...} is how we can reference parameters in SSM directly in our serverless.yml. It's useful for referencing things like this, but again, since the SSM parameter values are fetched at deployment time and baked into the generated CloudFormation template, you shouldn't load any secrets this way.
+      Resource: ${ssm:/dev/kmsArn}
 
 functions:
   get-index:

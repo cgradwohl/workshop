@@ -33,11 +33,13 @@ const defaultResults = ssm({
 });
 
 // we asked the middleware to put the secretString in the context object instead of the environment variable.
+// To give our function permission to decrypt the secret value using KMS, we need the ARN for the key.
+// we can provision a SSM parameter with the KMS key's ARN, thus allowing our function to access it
 const secretString = ssm({
   cache: true,
   cacheExpiryInMillis: 5 * 60 * 1000, // 5 mins
   names: {
-    secretString: `/${serviceName}/${stage}/search-restaurants/secretString`
+    secretString: `/${serviceName}/${stage}/search-restaurants/secretString` // note this param is KMS encrypted.
   },
   setToContext: true
 })
