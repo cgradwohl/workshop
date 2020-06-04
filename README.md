@@ -22,12 +22,12 @@ export async function main(event, context) {
   }
 }
 
-### Integration Tests
+## Integration Tests
 Test the integration points in the real systems.
 - for positive paths can use real services
 - for failure conditions use stubs and mocks so it does not break live services
 
-### e2e or Acceptance Tests
+## e2e or Acceptance Tests
 - use real services
 - from the api surface to the data persistence layer
 
@@ -47,6 +47,65 @@ The Test Honeycomb
 - less unit tests
 - more integration tests
 - less e2e tests
+
+## Serverless Project Organization
+1. mono repo - easier and faster development times, requires less processes for small teams (100 devs or less)
+2. one repo per service - requires more tooling, maintence, documentation and process. better for large orgs (100 devs or more)
+
+## AWS EventBridge
+- One of the benefits to using Event Bridge is that you can do content based pattern matching against the content (message) itself, where as 
+with SNS you you can only do message filtering based on the message attributes. 
+
+1. Event Bus
+- collecting events from a bus and do something
+- publishing events to a bus
+- there is always a default event bus that the other aws services uses
+
+2. Rules
+- you can patern match with rules to the default event bus, rules are identical
+- an AWS Event, like a poilcy document, is a formatted JSON blob
+```
+{
+  "version": "0",
+  "id": "6a7e8feb-b491-4cf7-a9f1-bf3703467718",
+  "detail-type": "EC2 Instance State-change Notification",
+  "source": "aws.ec2",
+  "account": "111122223333",
+  "time": "2017-12-22T18:43:48Z",
+  "region": "us-west-1",
+  "resources": [
+    "arn:aws:ec2:us-west-1:123456789012:instance/ i-1234567890abcdef0"
+  ],
+  "detail": {
+    "instance-id": " i-1234567890abcdef0",
+    "state": "terminated"
+  }
+}
+```
+But if you are using a custom event bus then you can make custom PUTs to the EventBus
+Sends custom events to Amazon EventBridge so that they can be matched to rules.
+```
+{
+   "Entries": [ 
+      { 
+         "Detail": "string",
+         "DetailType": "string",
+         "EventBusName": "string",
+         "Resources": [ "string" ],
+         "Source": "string",
+         "Time": number
+      }
+   ]
+}
+```
+
+3. Schema Registry 
+- to see what event you have in the bus
+- your schemas contains all the events from AWS services that you have published to the default Event Bus
+- if you want to discover all the events you have published to your custom event buses you need to enable Schema discovery which has an associated cost.
+
+4. Third Party Systems
+- you can listen to third party events as opposed to a web hook
 
 TODOs:
 1. Make the Tests more reliable
