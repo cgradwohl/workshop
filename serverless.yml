@@ -207,6 +207,10 @@ resources:
   # other stacks (to create cross-stack references), return in response (to describe stack calls),
   # or view on the AWS CloudFormation console. For example, you can output the S3 bucket
   # name in a stack to make the bucket easier to find.
+    EventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: order_events_${self:provider.stage}
   Outputs:
     RestaurantsTableName:
       Value: !Ref RestaurantsTable
@@ -222,6 +226,9 @@ resources:
 
     CognitoUserPoolServerClientId:
       Value: !Ref ServerCognitoUserPoolClient
+
+    EventBusName:
+      Value: !Ref EventBus
 
 # Serverless Framework Plugins
 plugins:
