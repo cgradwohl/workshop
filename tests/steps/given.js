@@ -29,6 +29,8 @@ const an_authenticated_user = async () => {
       { Name: "email",       Value: email }
     ]
   }
+
+  // using admin privalages to create a user manually
   await cognito.adminCreateUser(createReq).promise()
 
   console.log(`[${username}] - user is created`)
