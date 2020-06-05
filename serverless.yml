@@ -53,6 +53,12 @@ provider:
       Action: kms:Decrypt
       # This special syntax ${ssm:...} is how we can reference parameters in SSM directly in our serverless.yml. It's useful for referencing things like this, but again, since the SSM parameter values are fetched at deployment time and baked into the generated CloudFormation template, you shouldn't load any secrets this way.
       Resource: ${ssm:/dev/kmsArn}
+    - Effect: Allow
+      Action: events:PutEvents
+      # Notice that we're using "*" here as Resource. EventBridge doesn't support more granular permissions for PutEvents actions.
+      # The "*" means that anyone with this IAM permission would be able to publish events to ANY event bus in your AWS account, including the default event bus.
+      # ideally we would be able to provide this IAM execution role with access ONLY to our custom event bus
+      Resource: "*"
 
 functions:
   get-index:
@@ -95,13 +101,26 @@ functions:
       - http:
           path: /restaurants/search
           method: post
-          # Here we are saying that /restaurants/search needs to be authed by a Cognito Authroizer, which is a managed service.
+          # Here we are saying that /restaurants/search needs to be authed by a Cognito Authroizer function, which is a managed service by AWS.
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: CognitoAuthorizer
     environment:
       restaurants_table: !Ref RestaurantsTable
+  place-order:
+    handler: functions/place-order.handler
+    events:
+      - http:
+          path: /orders
+          method: post
+          # This function also uses the same Cognito User Tool for authorization, as it'll be called directly by the client app.
+          # remember that an authorizer returns a policy with a list of resources that are available for this user to use.
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref CognitoAuthorizer
+    environment:
+      bus_name: !Ref EventBus
       
 # CloudFormation
 resources:
