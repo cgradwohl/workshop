@@ -43,16 +43,20 @@ describe('Given an authenticated user', () => {
 
     it(`Should publish a message to EventBridge bus`, async () => {
       // here we are just validating the event shape that comes out of the event bus put event
-      expect(mockPutEvents).toBeCalledWith({
-        Entries: [
-          expect.objectContaining({
-            Source: 'big-mouth',
-            DetailType: 'order_placed',
-            Detail: expect.stringContaining(`"restaurantName":"Fangtasia"`),
-            EventBusName: expect.stringMatching(process.env.bus_name)
-          })
-        ]
-      })
+      // only validate EventBridge was called when executing as an integration test using mocks
+      // TODO: naming TEST_MODE as 'handler' for integration test mode and 'http' as e2e test mode is really stupid and confusing...change that! :)
+      if (process.env.TEST_MODE === 'handler') {
+        expect(mockPutEvents).toBeCalledWith({
+          Entries: [
+            expect.objectContaining({
+              Source: 'big-mouth',
+              DetailType: 'order_placed',
+              Detail: expect.stringContaining(`"restaurantName":"Fangtasia"`),
+              EventBusName: expect.stringMatching(process.env.bus_name)
+            })
+          ]
+        })
+      }
     })
   })
 })
