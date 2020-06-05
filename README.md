@@ -84,6 +84,7 @@ with SNS you you can only do message filtering based on the message attributes.
 ```
 But if you are using a custom event bus then you can make custom PUTs to the EventBus
 Sends custom events to Amazon EventBridge so that they can be matched to rules.
+https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html
 ```
 {
    "Entries": [ 
