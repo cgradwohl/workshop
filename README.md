@@ -130,3 +130,10 @@ Or maybe we can bundle everything into a single JSON file, and publish a single 
 
 We're not going to implement it here, but please feel free to take a crack at this yourself if you fancy exploring this idea further ;-)
 
+3. Properly test EventBridge put events. https://theburningmonk.com/2019/09/how-to-include-sns-and-kinesis-in-your-e2e-tests/
+See the place-order.tests.js file and  notice that here we are mocking the EventBridge putEvent
+The problem is that, to validate the events that are sent to EventBridge it'll
+take a bit of extra infrastructure set up. Because you can't just call EventBridge
+and ask what events it had just received on a bus recently.
+TODO: implement this: https://theburningmonk.com/2019/09/how-to-include-sns-and-kinesis-in-your-e2e-tests/
+This article outlines severals approaches to do this for SNS and Kinesis. But the same approaches (that are applicable for SNS) can be applied to EventBridge.
