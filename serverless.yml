@@ -202,16 +202,17 @@ resources:
             - - https://
               - !Ref ApiGatewayRestApi
               - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
-  # CloudFormation Outputs - This adds the resoursces to the cloudformation stack output!
-  # The optional Outputs section declares output values that you can import into
-  # other stacks (to create cross-stack references), return in response (to describe stack calls),
-  # or view on the AWS CloudFormation console. For example, you can output the S3 bucket
-  # name in a stack to make the bucket easier to find.
+    # This will provision an EventBridge bus called order_events_dev.
     EventBus:
       Type: AWS::Events::EventBus
       Properties:
         Name: order_events_${self:provider.stage}
   Outputs:
+    # CloudFormation Outputs - This adds the resoursces to the cloudformation stack output!
+    # The optional Outputs section declares output values that you can import into
+    # other stacks (to create cross-stack references), return in response (to describe stack calls),
+    # or view on the AWS CloudFormation console. For example, you can output the S3 bucket
+    # name in a stack to make the bucket easier to find.
     RestaurantsTableName:
       Value: !Ref RestaurantsTable
 
