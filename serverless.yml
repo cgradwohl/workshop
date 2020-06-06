@@ -114,6 +114,7 @@ functions:
               Ref: CognitoAuthorizer
     environment:
       restaurants_table: !Ref RestaurantsTable
+  
   place-order:
     handler: functions/place-order.handler
     events:
@@ -232,6 +233,9 @@ resources:
       Type: AWS::Events::EventBus
       Properties:
         Name: order_events_${self:provider.stage}
+    RestaurantNotificationTopic:
+      Type: AWS::SNS::Topic
+  
   Outputs:
     # CloudFormation Outputs - This adds the resoursces to the cloudformation stack output!
     # The optional Outputs section declares output values that you can import into
@@ -255,6 +259,12 @@ resources:
 
     EventBusName:
       Value: !Ref EventBus
+    
+    RestaurantNotificationTopicName:
+      Value: !GetAtt RestaurantNotificationTopic.TopicName
+
+    RestaurantNotificationTopicArn:
+      Value: !Ref RestaurantNotificationTopic
 
 # Serverless Framework Plugins
 plugins:
