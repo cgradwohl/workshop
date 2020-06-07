@@ -59,6 +59,10 @@ provider:
       # The "*" means that anyone with this IAM permission would be able to publish events to ANY event bus in your AWS account, including the default event bus.
       # ideally we would be able to provide this IAM execution role with access ONLY to our custom event bus
       Resource: "*"
+      # here we aare provisioning this service to be able to publish SNS events
+    - Effect: Allow
+      Action: sns:Publish
+      Resource: !Ref RestaurantNotificationTopic
 
 functions:
   get-index:
@@ -128,6 +132,31 @@ functions:
             authorizerId: !Ref CognitoAuthorizer
     environment:
       bus_name: !Ref EventBus
+  
+  notify-restaurant:
+    handler: functions/notify-restaurant.handler
+    events:
+      # https://www.serverless.com/framework/docs/providers/aws/events/event-bridge/#using-a-different-event-bus
+      # WHY NOT LET THE SEVERLESS FRAMEWORK CREATE THE EVENT BUS FOR US?
+      # The reason is that you generally wouldn't have a separate event bus per microservice.
+      # The power of EventBridge is that it gives you very fine-grained filtering capabilities
+      # and you can subscribe to events based on its content such as the type of the event (usually in the detail-type attribute).
+
+      # Therefore you typically would have a centralized event bus for the whole organization, and different services
+      # would be publishing and subscribing to the same event bus. This event bus would be provisioned by other projects
+      # that manage these shared resources (as discussed before). Which is why it's far more likely that your EventBridge
+      # functions would need to subscribe to an existing event bus by ARN. So we are providing the ARN string below :)
+      - eventBridge:
+          # we aren't using !GetAtt EventBus.Arn in the event source definition, it's because the Serverless framework only accepts a string here
+          eventBus: arn:aws:events:#{AWS::Region}:#{AWS::AccountId}:event-bus/order_events_${self:provider.stage}
+          pattern:
+            source:
+              - big-mouth
+            detail-type:
+              - order_placed # execute notify-restuarant on the order_placed event, i think this is content filtering ?
+    environment:
+      bus_name: !Ref EventBus
+      restaurant_notification_topic: !Ref RestaurantNotificationTopic
       
 # CloudFormation
 resources:
