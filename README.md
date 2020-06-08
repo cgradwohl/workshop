@@ -113,6 +113,21 @@ an excellen tool to trace your AWS events using the tail commands.
 - tail-sns
 - tail-eventbridge-bus
 
+## Partial Failures using AWS Events
+1. when processing async events use a Dead Letter Queue via SNS Topic or SQS Queue 
+[EventBrridge] -> [Lambda] -> [DLQ]
+
+2. ? Lamda Desinations, on supports failure and on success cases which is like a better DLQ. This provides addional response context and info without having to read logs.
+
+3. 
+- Events should be processed in real time.
+- Failed events should be retried and should not block the real time constraint.
+- Failed events should be retrievable.
+
+4. DynamoDB Stream and Kinesis
+- lambda fail case is BLOCKING when using these streams as a the lambdas invocation source, the lambda will coninue to retry for 24 hours :(
+- therefore you need to consider partial failures and idempotency when processing Kinesis and DynamoDB srteams with lambda.
+- Failed events should be retried and should not block the real time constraint.
 
 ## TODOs:
 1. Make the Tests more reliable

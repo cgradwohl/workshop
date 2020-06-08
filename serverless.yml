@@ -25,44 +25,44 @@ provider:
   # By default, one IAM Role is shared by all of the Lambda functions in your service.
   # To add specific rights to this service-wide Role, define statements in provider.iamRoleStatements which will be merged into the generated policy.
   # Our Lambda functions assume this IAM role during execution !
-  iamRoleStatements:
-    # ***
-    # * This adds the dynamodb:scan permission to the Lambda execution role.
-    # ***
-    - Effect: Allow
-      Action: dynamodb:scan
-      Resource: !GetAtt RestaurantsTable.Arn
-      #  ***
-      #  * Adds'execute-api:Invoke' to the IAM execution role, using serverless-pseudo-parameters
-      # ***
-    - Effect: Allow
-      Action: execute-api:Invoke
-      # the request arn to /restaurants much match this template in order to get access.
-      # here we are giving access to our other lambdas, via the default role to be able to invoke this resource
-      # basically all this says is that our other AWS resources can invoke this api endpoint
-      Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:#{ApiGatewayRestApi}/${self:provider.stage}/GET/restaurants
-    # adds the ssm permissions to the service wide IAM Role, with this in place any of our lambdas can fetch from these ssm parameter stores
-    - Effect: Allow
-      Action: ssm:GetParameters*
-      Resource:
-        - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/get-restaurants/config
-        - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/config
-        - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/secretString
-    # here we are adding the permission to the lambda execution role to allow decrypting kms keys useing the ssm value as a resource
-    - Effect: Allow
-      Action: kms:Decrypt
-      # This special syntax ${ssm:...} is how we can reference parameters in SSM directly in our serverless.yml. It's useful for referencing things like this, but again, since the SSM parameter values are fetched at deployment time and baked into the generated CloudFormation template, you shouldn't load any secrets this way.
-      Resource: ${ssm:/dev/kmsArn}
-    - Effect: Allow
-      Action: events:PutEvents
-      # Notice that we're using "*" here as Resource. EventBridge doesn't support more granular permissions for PutEvents actions.
-      # The "*" means that anyone with this IAM permission would be able to publish events to ANY event bus in your AWS account, including the default event bus.
-      # ideally we would be able to provide this IAM execution role with access ONLY to our custom event bus
-      Resource: "*"
-      # here we aare provisioning this service to be able to publish SNS events
-    - Effect: Allow
-      Action: sns:Publish
-      Resource: !Ref RestaurantNotificationTopic
+  # iamRoleStatements:
+  #   # ***
+  #   # * This adds the dynamodb:scan permission to the Lambda execution role.
+  #   # ***
+  #   - Effect: Allow
+  #     Action: dynamodb:scan
+  #     Resource: !GetAtt RestaurantsTable.Arn
+  #     #  ***
+  #     #  * Adds'execute-api:Invoke' to the IAM execution role, using serverless-pseudo-parameters
+  #     # ***
+  #   - Effect: Allow
+  #     Action: execute-api:Invoke
+  #     # the request arn to /restaurants much match this template in order to get access.
+  #     # here we are giving access to our other lambdas, via the default role to be able to invoke this resource
+  #     # basically all this says is that our other AWS resources can invoke this api endpoint
+  #     Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:#{ApiGatewayRestApi}/${self:provider.stage}/GET/restaurants
+  #   # adds the ssm permissions to the service wide IAM Role, with this in place any of our lambdas can fetch from these ssm parameter stores
+  #   - Effect: Allow
+  #     Action: ssm:GetParameters*
+  #     Resource:
+  #       - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/get-restaurants/config
+  #       - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/config
+  #       - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/secretString
+  #   # here we are adding the permission to the lambda execution role to allow decrypting kms keys useing the ssm value as a resource
+  #   - Effect: Allow
+  #     Action: kms:Decrypt
+  #     # This special syntax ${ssm:...} is how we can reference parameters in SSM directly in our serverless.yml. It's useful for referencing things like this, but again, since the SSM parameter values are fetched at deployment time and baked into the generated CloudFormation template, you shouldn't load any secrets this way.
+  #     Resource: ${ssm:/dev/kmsArn}
+  #   - Effect: Allow
+  #     Action: events:PutEvents
+  #     # Notice that we're using "*" here as Resource. EventBridge doesn't support more granular permissions for PutEvents actions.
+  #     # The "*" means that anyone with this IAM permission would be able to publish events to ANY event bus in your AWS account, including the default event bus.
+  #     # ideally we would be able to provide this IAM execution role with access ONLY to our custom event bus
+  #     Resource: "*"
+  #     # here we aare provisioning this service to be able to publish SNS events
+  #   - Effect: Allow
+  #     Action: sns:Publish
+  #     Resource: !Ref RestaurantNotificationTopic
 
 functions:
   get-index:
@@ -92,7 +92,10 @@ functions:
       #  we add cognito_server_client_id for testing purposes.
       #  The ALLOW_ADMIN_USER_PASSWORD_AUTH auth flow allows us to call the Cognito admin endpoints to register users and sign in as them.
       cognito_server_client_id: !Ref ServerCognitoUserPoolClient
-  
+    iamRoleStatements:
+      - Effect: Allow
+        Action: execute-api:Invoke
+        Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:#{ApiGatewayRestApi}/${self:provider.stage}/GET/restaurants
   get-restaurants:
     handler: functions/get-restaurants.handler
     events:
@@ -104,7 +107,13 @@ functions:
           authorizer: aws_iam
     environment:
       restaurants_table: !Ref RestaurantsTable
-  
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:scan
+        Resource: !GetAtt RestaurantsTable.Arn
+      - Effect: Allow
+        Action: ssm:GetParameters*
+        Resource: arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/get-restaurants/config
   search-restaurants:
     handler: functions/search-restaurants.handler
     events:
@@ -118,7 +127,18 @@ functions:
               Ref: CognitoAuthorizer
     environment:
       restaurants_table: !Ref RestaurantsTable
-  
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:scan
+        Resource: !GetAtt RestaurantsTable.Arn
+      - Effect: Allow
+        Action: ssm:GetParameters*
+        Resource:
+          - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/config
+          - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/secretString
+      - Effect: Allow
+        Action: kms:Decrypt
+        Resource: ${ssm:/dev/kmsArn}
   place-order:
     handler: functions/place-order.handler
     events:
@@ -132,7 +152,10 @@ functions:
             authorizerId: !Ref CognitoAuthorizer
     environment:
       bus_name: !Ref EventBus
-  
+    iamRoleStatements:
+      - Effect: Allow
+        Action: events:PutEvents
+        Resource: "*"
   notify-restaurant:
     handler: functions/notify-restaurant.handler
     events:
@@ -157,7 +180,13 @@ functions:
     environment:
       bus_name: !Ref EventBus
       restaurant_notification_topic: !Ref RestaurantNotificationTopic
-      
+    iamRoleStatements:
+      - Effect: Allow
+        Action: events:PutEvents
+        Resource: "*"
+      - Effect: Allow
+        Action: sns:Publish
+        Resource: !Ref RestaurantNotificationTopic
 # CloudFormation
 resources:
   # CloudFormation Resources
@@ -299,3 +328,4 @@ resources:
 plugins:
   - serverless-export-env
   - serverless-pseudo-parameters
+  - serverless-iam-roles-per-function
