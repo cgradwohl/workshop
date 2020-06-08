@@ -108,7 +108,13 @@ https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html
 4. Third Party Systems
 - you can listen to third party events as opposed to a web hook
 
-TODOs:
+## lumigo-cli
+an excellen tool to trace your AWS events using the tail commands.
+- tail-sns
+- tail-eventbridge-bus
+
+
+## TODOs:
 1. Make the Tests more reliable
 How can we make the tests more reliable/ resiliant without relying on the data from the database?
 a. The data that the tests need to assert on inorder to pass, should be created during the beforeAll() step. i.e. insert some data into the DB.
@@ -142,9 +148,3 @@ This article outlines severals approaches to do this for SNS and Kinesis. But th
 
 4. Read and understand content filtering with Event Bridge. https://www.tbray.org/ongoing/When/201x/2019/12/18/Content-based-filtering
 EventBridge vs SNS vs SQS vs Kinesis 
-
-5. While working on these changes, we don't have a way to check what our functions are writing to SNS or EventBridge. This is a common problem for teams that leverage these services heavily. To address this, check out the lumigo-cli. It has commands to tail-sns and tail-eventbridge-bus which lets you see what events are published to these services in real time.
-
-a. Use the lumigo-cli to peek at both the SNS topic and the EventBridge bus.
-
-b. Load the index page in the browser and place a few orders. You should see those events show up in the lumigo-cli terminals.
