@@ -107,6 +107,7 @@ functions:
           authorizer: aws_iam
     environment:
       restaurants_table: !Ref RestaurantsTable
+    iamRoleStatementsName: get-restuarants-role
     iamRoleStatements:
       - Effect: Allow
         Action: dynamodb:scan
@@ -127,6 +128,7 @@ functions:
               Ref: CognitoAuthorizer
     environment:
       restaurants_table: !Ref RestaurantsTable
+    iamRoleStatementsName: search-restuarants-role
     iamRoleStatements:
       - Effect: Allow
         Action: dynamodb:scan
@@ -180,6 +182,7 @@ functions:
     environment:
       bus_name: !Ref EventBus
       restaurant_notification_topic: !Ref RestaurantNotificationTopic
+    iamRoleStatementsName: notify-restuarant-role
     iamRoleStatements:
       - Effect: Allow
         Action: events:PutEvents
