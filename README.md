@@ -112,6 +112,7 @@ https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html
 an excellen tool to trace your AWS events using the tail commands.
 - tail-sns
 - tail-eventbridge-bus
+- Hint: you can find the event bus name and SNS topic name in the .env file. :)
 
 ## Partial Failures using AWS Events
 1. when processing async events use a Dead Letter Queue via SNS Topic or SQS Queue 
