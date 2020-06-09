@@ -130,6 +130,30 @@ an excellen tool to trace your AWS events using the tail commands.
 - therefore you need to consider partial failures and idempotency when processing Kinesis and DynamoDB srteams with lambda.
 - Failed events should be retried and should not block the real time constraint.
 
+## Event Systems n AWS ie. SNS vs SQS vs EventBridge vs Kinesis
+#### Concurrency
+- SNS and EventBridge have linear concurency
+- SNS and EventBridge do not support batch messages, so 100 concurrent messages will invoke 100 concurent lambdas
+- note EventBridge has a soft limit of 4000 messages per second (send a support ticket if you need more)
+
+- Because SQS has batched messages it still scales linearly bu at less slope.
+- SQS concurenccy is determined by the number of poller functions that AWS runs on your behalf (starts a 5) and scales to more based on the number unique groupids of batches.
+
+- Kinesis has steped concurrency based on number of shards.
+- Kinesis one execution per shard by default, where you can ingest 1Mb per shard or 1000 records per second.
+- Kinesis improves concurrency per shard by allowing 10 baches of messages executed simulteancy while still guarenteeing order of messsages!
+
+#### Controll Concurrency 
+Problem #1: Downstream Throughput Limit (Kinesis vs. SNS/ EventBridge)
+Let SNS produce 1000 messgages and therefore creates 1000 concuren execution of our lambda. Then our lambda will need to do sometthing downstrteam like talk to a DB or another service. This downstream lambda target may have a max throughput that cannot keep up with the infinite scale of SNS and lambda.
+a. SNS will retry by default. But if the messages are produce at high volume for an extetnded period of time then the retries themselves will fail. Therefore, since we need percise control of the thhroughput in this case we should uttilize Kinesis. The messages will be __amortized__ or safely processed later. :)
+b. If on the other hand we do not have this requirement of throughput for a downstream lambda target then we should use SNS/EventBridge
+
+Problem #2: Downstream Outage
+If the downstream lambda ttarget experiences an outage, then all of the events produces by SNS and EventBridge that triger the lambda should end up in the dead letter queue DLQ.
+
+With Kinesis the default is to retry until success and 1 poison message can desstroy he entire shard. Additional configurations are available to handle retries.
+
 ## TODOs:
 1. Make the Tests more reliable
 How can we make the tests more reliable/ resiliant without relying on the data from the database?
