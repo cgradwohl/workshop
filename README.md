@@ -143,6 +143,24 @@ an excellen tool to trace your AWS events using the tail commands.
 - Kinesis one execution per shard by default, where you can ingest 1Mb per shard or 1000 records per second.
 - Kinesis improves concurrency per shard by allowing 10 baches of messages executed simulteancy while still guarenteeing order of messsages!
 
+## Event Designs
+1. Fan Out - unlike PubSub (which provides every service with a copy of the message), with Fan Out we divide and conquer different parts of the parent task from the original message.
+[msg] -> [ventilator(SQS)] -> [lambda_1] ... [lambda_n]
+
+2. Fan In -> aggregate the results from the fan out and produce the final result
+[result_1] ... [result_n] -> [reducer]
+
+3. Step Function - The best implementation of a Fan Out -> Fan In sevice is to utilize a step function state machine with the dynamic parallelization feature.
+
+## Bounded Context
+- fits within my head, high cohesion, same ownership
+- using choreography (via events and SNS) in general for a bounded context system is a bad idea. It is hard to map the e2e solution and undnerstand what is happening when things go wrong, i.e. the workflow does not exisit as a stand alone concept making it difficult to manage. Instead of implementing loosly coupled event based bounded context systems, use a step function instead. It is a good idea to emit events from within a step function so that other services can listen to the progress of the step function. BEWARE THE COST OF STEP FUNCTIONS.
+
+
+## Orchestration VS Choreography
+- Orchestration within a bounded context, do not use events within the bounded context system.
+- Choreography betweeen a bounded context, use events to cordinate different systems together
+
 #### Controll Concurrency 
 Problem #1: Downstream Throughput Limit (Kinesis vs. SNS/ EventBridge)
 Let SNS produce 1000 messgages and therefore creates 1000 concuren execution of our lambda. Then our lambda will need to do sometthing downstrteam like talk to a DB or another service. This downstream lambda target may have a max throughput that cannot keep up with the infinite scale of SNS and lambda.
@@ -188,3 +206,6 @@ This article outlines severals approaches to do this for SNS and Kinesis. But th
 
 4. Read and understand content filtering with Event Bridge. https://www.tbray.org/ongoing/When/201x/2019/12/18/Content-based-filtering
 EventBridge vs SNS vs SQS vs Kinesis 
+
+5. Redo the order and notification workflow using a step function.
+[Start] -> [Notify Restaurant] -> [Wait for Restaurant to ACCEPT] -> [Did Resatuarnt ACCEPT ?] -> If NO then [Cancel Order], If Yes, then [Notify User] -> [Wait For Restaurant to Deliver] -> If Delivered then [Complete Order], Else [Cancel Order] -> [End]
