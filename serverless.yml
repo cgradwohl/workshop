@@ -8,10 +8,12 @@ provider:
   name: aws
   runtime: nodejs12.x
   environment:
-    # To make the HTTP request, we need to know the root URL for the deploy API and put it somewhere so the viaHttp test method can use.
-    # Luckily, we already capture and load environment variables using the serverless-export-env plugin and the dotEnv npm module, and the .env file
+    # To make the HTTP request, we need to know the root URL for the deploy API and put it
+    # somewhere so in our tests the viaHttp() method can know where to make a request.
+    # Luckily, we already capture and load environment variables using the serverless-export-env plugin and the
+    # dotEnv npm module with the .env file
     # This adds a rootUrl environment variable to ALL the functions in this project. This environment variable would be picked
-    # up and loaded into our tests by the init module in the test directory.
+    # up and loaded into our tests by the when() module in the test directory.
     rootUrl:
       Fn::Join:
         - ""

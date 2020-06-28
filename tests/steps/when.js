@@ -99,13 +99,15 @@ const viaHttp = async (relPath, method, opts) => {
   try {
     const data = _.get(opts, "body")
     let headers = {}
-    if (_.get(opts, "iam_auth", false) === true) {
+    
+    const iamAuthHeader = _.get(opts, "iam_auth", false)
+    if (iamAuthHeader === true) {
       headers = signHttpRequest(url)
     }
 
     const authHeader = _.get(opts, "auth")
     if (authHeader) {
-      headers.Authorization = authHeader
+      headers.Authorization = authHeader // this should be user.idToken
     }
 
     const httpReq = http.request({
@@ -152,6 +154,8 @@ const we_invoke_search_restaurants = async (theme, user) => {
 
   switch (mode) {
     case 'handler':
+      // NOTE: for integration testing, we are just testing the connection from cognito to the rest of stack
+      // NOTE: therefore we just invoke without the auth
       return await viaHandler({ body }, 'search-restaurants')
     case 'http':
       const auth = user.idToken
